@@ -1,10 +1,8 @@
 import "./App.css";
-import bgVideo from "./assets/bg.mp4";
-import bgVideoAlt from "./assets/bg-alt.mp4";
 import manasaLogo from "./assets/logo-dark.png";
 
 function App() {
-  const videos = [bgVideo, bgVideoAlt];
+  const videos = ["/bg.mp4", "/bg-alt.mp4"];
   const randomVideo = videos[Math.floor(Math.random() * videos.length)];
 
   return (
