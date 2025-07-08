@@ -112,40 +112,71 @@ function Bun(props) {
 
 function CameraRig() {
   const { viewport } = useThree();
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [isMobile, setIsMobile] = useState(false);
   const gyroData = useRef({ beta: 0, gamma: 0 });
   const permissionGranted = useRef(false);
+
+  // Detect mobile devices more reliably
+  useEffect(() => {
+    const checkMobile = () => {
+      return /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    };
+
+    setIsMobile(checkMobile());
+
+    // Handle orientation change (landscape/portrait switch)
+    const handleResize = () => setIsMobile(checkMobile());
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Handle device orientation for mobile
   useEffect(() => {
     if (!isMobile) return;
 
     const handleOrientation = (event) => {
-      if (event.beta !== null && event.gamma !== null) {
-        gyroData.current = {
-          beta: event.beta,
-          gamma: event.gamma,
-        };
-      }
+      // Chrome on Android uses absolute values
+      const beta = event.beta !== null ? event.beta : 0;
+      const gamma = event.gamma !== null ? event.gamma : 0;
+
+      gyroData.current = { beta, gamma };
     };
 
     const requestPermission = () => {
       if (permissionGranted.current) return;
 
-      // iOS requires permission request
+      // iOS 13+ requires permission request
       if (typeof DeviceOrientationEvent.requestPermission === "function") {
         DeviceOrientationEvent.requestPermission()
           .then((permissionState) => {
             if (permissionState === "granted") {
               permissionGranted.current = true;
-              window.addEventListener("deviceorientation", handleOrientation);
+              window.addEventListener(
+                "deviceorientation",
+                handleOrientation,
+                true
+              );
             }
           })
-          .catch(console.error);
+          .catch(console.warn);
       } else {
-        // Android and other browsers
-        permissionGranted.current = true;
-        window.addEventListener("deviceorientation", handleOrientation);
+        // Chrome on Android and other browsers
+        try {
+          // Chrome requires secure context (HTTPS)
+          if (window.isSecureContext) {
+            permissionGranted.current = true;
+            window.addEventListener(
+              "deviceorientation",
+              handleOrientation,
+              true
+            );
+          }
+        } catch (e) {
+          console.warn("Device orientation not supported", e);
+        }
       }
     };
 
@@ -153,9 +184,12 @@ function CameraRig() {
     const handleFirstTouch = () => {
       requestPermission();
       window.removeEventListener("touchstart", handleFirstTouch);
+      window.removeEventListener("click", handleFirstTouch);
     };
 
-    window.addEventListener("touchstart", handleFirstTouch);
+    // Use both touch and click for broader support
+    window.addEventListener("touchstart", handleFirstTouch, { once: true });
+    window.addEventListener("click", handleFirstTouch, { once: true });
 
     return () => {
       window.removeEventListener("deviceorientation", handleOrientation);
@@ -164,13 +198,26 @@ function CameraRig() {
 
   useFrame((state, delta) => {
     if (isMobile && permissionGranted.current) {
-      // Convert gyro data to camera movement (0-90° range)
-      const beta = THREE.MathUtils.clamp(gyroData.current.beta, 0, 90);
-      const gamma = THREE.MathUtils.clamp(gyroData.current.gamma, -45, 45);
+      // Normalize values across platforms
+      let beta = gyroData.current.beta;
+      let gamma = gyroData.current.gamma;
 
-      // Map device orientation to camera position
-      const targetX = THREE.MathUtils.mapLinear(gamma, -45, 45, -3, 0);
-      const targetY = THREE.MathUtils.mapLinear(beta, 0, 90, 0.5, 2.5);
+      // iOS uses relative values, Android uses absolute
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+      if (isIOS) {
+        // iOS: Values are relative to portrait orientation
+        beta = THREE.MathUtils.clamp(beta, -90, 90);
+        gamma = THREE.MathUtils.clamp(gamma, -90, 90);
+      } else {
+        // Android: Values are absolute
+        beta = THREE.MathUtils.clamp(beta - 90, -90, 90);
+        gamma = THREE.MathUtils.clamp(gamma, -90, 90);
+      }
+
+      // Map to camera position
+      const targetX = -1.5 + gamma * 0.03;
+      const targetY = 1 + beta * 0.02;
 
       easing.damp3(state.camera.position, [targetX, targetY, 5.5], 0.3, delta);
     } else {
