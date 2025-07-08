@@ -1,0 +1,81 @@
+@import 'tailwindcss';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: black;
+  color: #f0f0f0;
+  font-family: 'Inter';
+}
+
+a {
+  color: #f0f0f0;
+}
+
+a {
+  pointer-events: all;
+  color: #f0f0f0;
+  text-decoration: none;
+}
+
+svg {
+  fill: #f0f0f0;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+canvas {
+  opacity: 0;
+  touch-action: none;
+  animation: fade-in 5s ease 1s forwards;
+}
+
+input {
+  font-family: 'Inter';
+  width: 100px;
+  border: none;
+  background-image: none;
+  background-color: transparent;
+  color: transparent;
+  caret-color: #555;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  font-weight: 400;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/funnel-display-v2-latin-regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.contact {
+  font-family: 'Funnel Display', 'Inter', sans-serif !important;
+  letter-spacing: -0.01em;
+}
