@@ -1,4 +1,9 @@
-import { BakeShadows, MeshReflectorMaterial, useGLTF } from "@react-three/drei";
+import {
+  BakeShadows,
+  DeviceOrientationControls,
+  MeshReflectorMaterial,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Bloom,
@@ -10,7 +15,7 @@ import { easing } from "maath";
 import { BlendFunction } from "postprocessing";
 import { useEffect, useRef } from "react";
 import { suspend } from "suspend-react";
-
+import { Vector3 } from "three";
 import { Computers, Instances } from "./Computers";
 
 const suzi = import("@pmndrs/assets/models/bunny.glb");
@@ -111,131 +116,70 @@ function Bun(props) {
 }
 
 function CameraRig() {
-  const { viewport } = useThree();
-  const [isMobile, setIsMobile] = useState(false);
-  const gyroData = useRef({ beta: 0, gamma: 0 });
-  const permissionGranted = useRef(false);
+  const { camera, gl } = useThree();
+  const controlsRef = (useRef < DeviceOrientationControls) | (null > null);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const initialPosition = new Vector3(-1.5, 1, 5.5);
 
-  // Detect mobile devices more reliably
-  useEffect(() => {
-    const checkMobile = () => {
-      return /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-    };
-
-    setIsMobile(checkMobile());
-
-    // Handle orientation change (landscape/portrait switch)
-    const handleResize = () => setIsMobile(checkMobile());
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Handle device orientation for mobile
+  // Initialize device orientation controls
   useEffect(() => {
     if (!isMobile) return;
 
-    const handleOrientation = (event) => {
-      // Chrome on Android uses absolute values
-      const beta = event.beta !== null ? event.beta : 0;
-      const gamma = event.gamma !== null ? event.gamma : 0;
-
-      gyroData.current = { beta, gamma };
-    };
-
-    const requestPermission = () => {
-      if (permissionGranted.current) return;
-
-      // iOS 13+ requires permission request
-      if (typeof DeviceOrientationEvent.requestPermission === "function") {
-        DeviceOrientationEvent.requestPermission()
-          .then((permissionState) => {
-            if (permissionState === "granted") {
-              permissionGranted.current = true;
-              window.addEventListener(
-                "deviceorientation",
-                handleOrientation,
-                true
-              );
-            }
-          })
-          .catch(console.warn);
-      } else {
-        // Chrome on Android and other browsers
-        try {
-          // Chrome requires secure context (HTTPS)
-          if (window.isSecureContext) {
-            permissionGranted.current = true;
-            window.addEventListener(
-              "deviceorientation",
-              handleOrientation,
-              true
-            );
-          }
-        } catch (e) {
-          console.warn("Device orientation not supported", e);
-        }
+    const initGyroControls = () => {
+      try {
+        controlsRef.current = new DeviceOrientationControls(camera);
+        // iOS requires user gesture for permission
+        document.addEventListener("touchstart", requestGyroPermission, {
+          once: true,
+        });
+      } catch (error) {
+        console.warn("Gyroscope not supported:", error);
       }
     };
 
-    // Request permission on first touch
-    const handleFirstTouch = () => {
-      requestPermission();
-      window.removeEventListener("touchstart", handleFirstTouch);
-      window.removeEventListener("click", handleFirstTouch);
+    const requestGyroPermission = () => {
+      if (controlsRef.current) {
+        // Add event listener to initialize gyro after user interaction
+        window.addEventListener("deviceorientation", handleOrientation, {
+          once: true,
+        });
+      }
     };
 
-    // Use both touch and click for broader support
-    window.addEventListener("touchstart", handleFirstTouch, { once: true });
-    window.addEventListener("click", handleFirstTouch, { once: true });
+    const handleOrientation = () => {
+      // Permission granted, enable controls
+    };
+
+    initGyroControls();
 
     return () => {
+      controlsRef.current?.dispose();
+      document.removeEventListener("touchstart", requestGyroPermission);
       window.removeEventListener("deviceorientation", handleOrientation);
     };
-  }, [isMobile]);
+  }, [camera, isMobile]);
 
   useFrame((state, delta) => {
-    if (isMobile && permissionGranted.current) {
-      // Normalize values across platforms
-      let beta = gyroData.current.beta;
-      let gamma = gyroData.current.gamma;
+    if (isMobile && controlsRef.current) {
+      // Update device orientation controls
+      controlsRef.current.update();
 
-      // iOS uses relative values, Android uses absolute
-      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-
-      if (isIOS) {
-        // iOS: Values are relative to portrait orientation
-        beta = THREE.MathUtils.clamp(beta, -90, 90);
-        gamma = THREE.MathUtils.clamp(gamma, -90, 90);
-      } else {
-        // Android: Values are absolute
-        beta = THREE.MathUtils.clamp(beta - 90, -90, 90);
-        gamma = THREE.MathUtils.clamp(gamma, -90, 90);
-      }
-
-      // Map to camera position
-      const targetX = -1.5 + gamma * 0.03;
-      const targetY = 1 + beta * 0.02;
-
-      easing.damp3(state.camera.position, [targetX, targetY, 5.5], 0.3, delta);
+      // Maintain original camera position
+      state.camera.position.copy(initialPosition);
     } else {
       // Original pointer-based movement
       easing.damp3(
         state.camera.position,
         [
-          -1 + (state.pointer.x * viewport.width) / 3,
+          -1 + (state.pointer.x * state.viewport.width) / 3,
           (1 + state.pointer.y) / 2,
           5.5,
         ],
         0.5,
         delta
       );
+      state.camera.lookAt(0, 0, 0);
     }
-
-    // Maintain original lookAt point
-    state.camera.lookAt(0, 0, 0);
   });
 
   return null;
