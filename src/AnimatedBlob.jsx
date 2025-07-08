@@ -39,7 +39,7 @@ export function AnimatedBlob({ scale = 1, ...props }) {
         originalPositions.current[i * 3 + 2]
       );
 
-      // Calculate noise displacement - CORRECTED METHOD NAME HERE
+      // Calculate noise displacement
       const noiseValue = noise.noise(
         vertex.x * 0.5 + time * 0.5,
         vertex.y * 0.5,
