@@ -1,5 +1,5 @@
 import { BakeShadows, MeshReflectorMaterial, useGLTF } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Bloom,
   ChromaticAberration,
@@ -8,6 +8,7 @@ import {
 } from "@react-three/postprocessing";
 import { easing } from "maath";
 import { BlendFunction } from "postprocessing";
+import { useEffect, useRef } from "react";
 import { suspend } from "suspend-react";
 
 import { Computers, Instances } from "./Computers";
@@ -110,17 +111,85 @@ function Bun(props) {
 }
 
 function CameraRig() {
+  const { viewport } = useThree();
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const gyroData = useRef({ beta: 0, gamma: 0 });
+  const permissionGranted = useRef(false);
+
+  // Handle device orientation for mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleOrientation = (event) => {
+      if (event.beta !== null && event.gamma !== null) {
+        gyroData.current = {
+          beta: event.beta,
+          gamma: event.gamma,
+        };
+      }
+    };
+
+    const requestPermission = () => {
+      if (permissionGranted.current) return;
+
+      // iOS requires permission request
+      if (typeof DeviceOrientationEvent.requestPermission === "function") {
+        DeviceOrientationEvent.requestPermission()
+          .then((permissionState) => {
+            if (permissionState === "granted") {
+              permissionGranted.current = true;
+              window.addEventListener("deviceorientation", handleOrientation);
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Android and other browsers
+        permissionGranted.current = true;
+        window.addEventListener("deviceorientation", handleOrientation);
+      }
+    };
+
+    // Request permission on first touch
+    const handleFirstTouch = () => {
+      requestPermission();
+      window.removeEventListener("touchstart", handleFirstTouch);
+    };
+
+    window.addEventListener("touchstart", handleFirstTouch);
+
+    return () => {
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
+  }, [isMobile]);
+
   useFrame((state, delta) => {
-    easing.damp3(
-      state.camera.position,
-      [
-        -1 + (state.pointer.x * state.viewport.width) / 3,
-        (1 + state.pointer.y) / 2,
-        5.5,
-      ],
-      0.5,
-      delta
-    );
+    if (isMobile && permissionGranted.current) {
+      // Convert gyro data to camera movement (0-90° range)
+      const beta = THREE.MathUtils.clamp(gyroData.current.beta, 0, 90);
+      const gamma = THREE.MathUtils.clamp(gyroData.current.gamma, -45, 45);
+
+      // Map device orientation to camera position
+      const targetX = THREE.MathUtils.mapLinear(gamma, -45, 45, -3, 0);
+      const targetY = THREE.MathUtils.mapLinear(beta, 0, 90, 0.5, 2.5);
+
+      easing.damp3(state.camera.position, [targetX, targetY, 5.5], 0.3, delta);
+    } else {
+      // Original pointer-based movement
+      easing.damp3(
+        state.camera.position,
+        [
+          -1 + (state.pointer.x * viewport.width) / 3,
+          (1 + state.pointer.y) / 2,
+          5.5,
+        ],
+        0.5,
+        delta
+      );
+    }
+
+    // Maintain original lookAt point
     state.camera.lookAt(0, 0, 0);
   });
+
+  return null;
 }
