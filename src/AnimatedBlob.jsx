@@ -68,10 +68,10 @@ export function AnimatedBlob({ scale = 1, ...props }) {
     >
       <icosahedronGeometry ref={geometryRef} args={[1, 4]} />
       <meshStandardMaterial
-        color={hovered ? "white" : "#fc5454"}
+        color={hovered ? "white" : "red"}
         metalness={0.5}
         roughness={0.5}
-        emissive="#fc5454"
+        emissive="red"
       />
     </mesh>
   );
