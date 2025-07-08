@@ -1,14 +1,16 @@
+import { BakeShadows, MeshReflectorMaterial, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, MeshReflectorMaterial, BakeShadows } from "@react-three/drei";
 import {
-  EffectComposer,
   Bloom,
+  ChromaticAberration,
   DepthOfField,
-  ToneMapping,
+  EffectComposer,
 } from "@react-three/postprocessing";
 import { easing } from "maath";
+import { BlendFunction } from "postprocessing";
 import { suspend } from "suspend-react";
-import { Instances, Computers } from "./Computers";
+
+import { Computers, Instances } from "./Computers";
 
 const suzi = import("@pmndrs/assets/models/bunny.glb");
 
@@ -74,13 +76,19 @@ export default function App() {
           luminanceThreshold={0}
           mipmapBlur
           luminanceSmoothing={0.0}
-          intensity={5}
+          intensity={3}
         />
         <DepthOfField
           target={[0, 0, 13]}
           focalLength={0.3}
           bokehScale={15}
           height={700}
+        />
+        {/* <Noise opacity={0.01} /> */}
+        {/* <Vignette eskil={false} offset={0.1} darkness={1.1} /> */}
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL} // blend mode
+          offset={[0.001, 0.002]} // color offset
         />
       </EffectComposer>
       {/* Camera movements */}
