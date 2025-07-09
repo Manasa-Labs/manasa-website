@@ -20,12 +20,7 @@ body {
 }
 
 a {
-  color: #f0f0f0;
-}
-
-a {
   pointer-events: all;
-  color: #f0f0f0;
   text-decoration: none;
 }
 

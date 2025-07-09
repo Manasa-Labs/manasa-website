@@ -83,7 +83,7 @@ export function Overlay() {
           style={{ pointerEvents: "auto" }}
           className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-red-500 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
         >
-          <span className="text-black ">Get your Free Strategic Roadmap →</span>
+          <span>Get your Free Strategic Roadmap →</span>
         </a>
       </section>
       <div className="absolute w-48 bottom-5 left-5 md:w-72 md:bottom-10 md:left-10 sm:w-64 sm:bottom-10 sm:left-10 lg:w-96 lg:bottom-12 lg:left-12 xl:w-72 2xl:w-96">
