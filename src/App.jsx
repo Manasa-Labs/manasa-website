@@ -1,6 +1,5 @@
 import {
   BakeShadows,
-  DeviceOrientationControls,
   MeshReflectorMaterial,
   useGLTF,
 } from "@react-three/drei";
@@ -13,7 +12,7 @@ import {
 } from "@react-three/postprocessing";
 import { easing } from "maath";
 import { BlendFunction } from "postprocessing";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { suspend } from "suspend-react";
 import { Vector3 } from "three";
 import { Computers, Instances } from "./Computers";
@@ -119,6 +118,49 @@ function CameraRig() {
   const { camera, gl } = useThree();
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
+  const [orientation, setOrientation] = useState({ gamma: 0, beta: 0 }); // State to store orientation data
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleDeviceOrientation = (event) => {
+      // Gamma: left-to-right tilt (-90 to 90 degrees)
+      // Beta: front-to-back tilt (-180 to 180 degrees)
+      setOrientation({ gamma: event.gamma, beta: event.beta });
+    };
+
+    // Request permission for iOS 13+
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const requestPermission = () => {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', handleDeviceOrientation);
+            } else {
+              console.warn('Device orientation permission denied.');
+            }
+          })
+          .catch(console.error);
+      };
+      // Trigger permission request on first user interaction
+      document.body.addEventListener('click', requestPermission, { once: true });
+      document.body.addEventListener('touchstart', requestPermission, { once: true });
+    } else {
+      // For non-iOS 13+ devices, just add the listener
+      window.addEventListener('deviceorientation', handleDeviceOrientation);
+    }
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleDeviceOrientation);
+      // Clean up permission listeners if they were added
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const requestPermission = () => {}; // Dummy function to remove listener
+        document.body.removeEventListener('click', requestPermission);
+        document.body.removeEventListener('touchstart', requestPermission);
+      }
+    };
+  }, [isMobile]);
+
   useFrame((state, delta) => {
     if (!isMobile) {
       // Original pointer-based movement for desktop
@@ -132,14 +174,21 @@ function CameraRig() {
         0.5,
         delta
       );
-      state.camera.lookAt(0, 0, 0);
+    } else {
+      // Mobile: Apply slight pan based on gamma (left/right tilt)
+      const panFactor = 0.02; // Adjust this for desired "slightness" of pan
+      const targetX = -1.5 + (orientation.gamma * panFactor); // Initial X + scaled gamma
+      const targetY = 1; // Keep Y fixed
+      const targetZ = 5.5; // Keep Z fixed
+
+      easing.damp3(state.camera.position, [targetX, targetY, targetZ], 0.5, delta);
+
+      // Ensure camera rotation is fixed (no rotation from DeviceOrientationControls)
+      state.camera.rotation.set(0, 0, 0); // Reset rotation to ensure it's fixed
     }
-    // DeviceOrientationControls handles camera movement for mobile
+    // Ensure camera always looks at the scene origin
+    state.camera.lookAt(0, 0, 0);
   });
 
-  return (
-    <>
-      {isMobile && <DeviceOrientationControls />}
-    </>
-  );
+  return null; // No JSX component needed for controls
 }
