@@ -1,9 +1,8 @@
-import React, { Suspense, lazy } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-const LazyApp = lazy(() => import("./App.jsx"));
 import "./styles.css";
+const LazyApp = lazy(() => import("./App.jsx"));
 
 const headlines = [
   <>
@@ -62,7 +61,7 @@ export function Overlay() {
         pointerEvents: "none",
       }}
     >
-      <div className="absolute inset-0 z-0 bg-black/50" />
+      <div className="absolute inset-0 z-0 bg-black/30" />
 
       <section className="relative z-10 max-w-2xl px-4 mx-auto text-center -translate-y-1/2 top-1/2">
         <RotatingHeadline texts={headlines} interval={5000} />
@@ -86,7 +85,7 @@ export function Overlay() {
       </div>
       <div className="absolute hidden bottom-5 right-5 md:bottom-10 md:right-10 sm:bottom-10 sm:right-10 lg:bottom-12 lg:right-12 xl:bottom-10 xl:right-10 2xl:bottom-12 2xl:right-12 md:block">
         <a
-          href="mailto:contact@manasa.ai"
+          href="mailto:ask@manasa.ai"
           className="mt-4 text-2xl font-bold text-white transition duration-300 border-b-2 border-white-400 md:text-3xl sm:text-3xl contact hover:border-orange-500 hover:text-orange-500"
         >
           ask@manasa.ai
