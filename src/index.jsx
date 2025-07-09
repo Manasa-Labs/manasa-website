@@ -73,7 +73,11 @@ export function Overlay() {
           future-ready.
         </p>
         <a
-          href="#contact"
+          href="https://cal.com/manasa-labs/free-strategic-roadmap"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Get a Free Strategic Roadmap"
+          style={{ pointerEvents: "auto" }}
           className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-orange-400 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
         >
           <span className="text-black ">Get a Free Strategic Roadmap →</span>
