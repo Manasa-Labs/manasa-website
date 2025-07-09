@@ -1,8 +1,4 @@
-import {
-  BakeShadows,
-  MeshReflectorMaterial,
-  useGLTF,
-} from "@react-three/drei";
+import { BakeShadows, MeshReflectorMaterial, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Bloom,
@@ -14,7 +10,6 @@ import { easing } from "maath";
 import { BlendFunction } from "postprocessing";
 import { useEffect, useState } from "react";
 import { suspend } from "suspend-react";
-import { Vector3 } from "three";
 import { Computers, Instances } from "./Computers";
 
 const suzi = import("@pmndrs/assets/models/bunny.glb");
@@ -116,9 +111,15 @@ function Bun(props) {
 
 function CameraRig() {
   const { camera, gl } = useThree();
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  const isMobile =
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0;
 
-  const [orientation, setOrientation] = useState({ gamma: 0, beta: 0 }); // State to store orientation data
+  const [orientation, setOrientation] = useState({ gamma: 0, beta: 0 });
+
+  // Variable to control the sensitivity of the parallax pan effect on mobile
+  const MOBILE_PAN_SENSITIVITY = 0.05;
 
   useEffect(() => {
     if (!isMobile) return;
@@ -130,33 +131,40 @@ function CameraRig() {
     };
 
     // Request permission for iOS 13+
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
       const requestPermission = () => {
         DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              window.addEventListener('deviceorientation', handleDeviceOrientation);
+          .then((permissionState) => {
+            if (permissionState === "granted") {
+              window.addEventListener(
+                "deviceorientation",
+                handleDeviceOrientation
+              );
             } else {
-              console.warn('Device orientation permission denied.');
+              console.warn("Device orientation permission denied.");
             }
           })
           .catch(console.error);
       };
       // Trigger permission request on first user interaction
-      document.body.addEventListener('click', requestPermission, { once: true });
-      document.body.addEventListener('touchstart', requestPermission, { once: true });
+      document.body.addEventListener("click", requestPermission, {
+        once: true,
+      });
+      document.body.addEventListener("touchstart", requestPermission, {
+        once: true,
+      });
     } else {
       // For non-iOS 13+ devices, just add the listener
-      window.addEventListener('deviceorientation', handleDeviceOrientation);
+      window.addEventListener("deviceorientation", handleDeviceOrientation);
     }
 
     return () => {
-      window.removeEventListener('deviceorientation', handleDeviceOrientation);
+      window.removeEventListener("deviceorientation", handleDeviceOrientation);
       // Clean up permission listeners if they were added
-      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        const requestPermission = () => {}; // Dummy function to remove listener
-        document.body.removeEventListener('click', requestPermission);
-        document.body.removeEventListener('touchstart', requestPermission);
+      if (typeof DeviceOrientationEvent.requestPermission === "function") {
+        const requestPermission = () => {};
+        document.body.removeEventListener("click", requestPermission);
+        document.body.removeEventListener("touchstart", requestPermission);
       }
     };
   }, [isMobile]);
@@ -176,15 +184,19 @@ function CameraRig() {
       );
     } else {
       // Mobile: Apply slight pan based on gamma (left/right tilt)
-      const panFactor = 0.02; // Adjust this for desired "slightness" of pan
-      const targetX = -1.5 + (orientation.gamma * panFactor); // Initial X + scaled gamma
+      const targetX = -1.5 + orientation.gamma * MOBILE_PAN_SENSITIVITY; // Initial X + scaled gamma
       const targetY = 1; // Keep Y fixed
       const targetZ = 5.5; // Keep Z fixed
 
-      easing.damp3(state.camera.position, [targetX, targetY, targetZ], 0.5, delta);
+      easing.damp3(
+        state.camera.position,
+        [targetX, targetY, targetZ],
+        0.5,
+        delta
+      );
 
-      // Ensure camera rotation is fixed (no rotation from DeviceOrientationControls)
-      state.camera.rotation.set(0, 0, 0); // Reset rotation to ensure it's fixed
+      // Reset camera rotation to avoid tilting
+      state.camera.rotation.set(0, 0, 0);
     }
     // Ensure camera always looks at the scene origin
     state.camera.lookAt(0, 0, 0);
