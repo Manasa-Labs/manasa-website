@@ -117,54 +117,11 @@ function Bun(props) {
 
 function CameraRig() {
   const { camera, gl } = useThree();
-  const controlsRef = (useRef < DeviceOrientationControls) | (null > null);
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const initialPosition = new Vector3(-1.5, 1, 5.5);
-
-  // Initialize device orientation controls
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const initGyroControls = () => {
-      try {
-        controlsRef.current = new DeviceOrientationControls(camera);
-        // iOS requires user gesture for permission
-        document.addEventListener("touchstart", requestGyroPermission, {
-          once: true,
-        });
-      } catch (error) {
-        console.warn("Gyroscope not supported:", error);
-      }
-    };
-
-    const requestGyroPermission = () => {
-      if (controlsRef.current) {
-        // Add event listener to initialize gyro after user interaction
-        window.addEventListener("deviceorientation", handleOrientation, {
-          once: true,
-        });
-      }
-    };
-
-    const handleOrientation = () => {
-      // Permission granted, enable controls
-    };
-
-    initGyroControls();
-
-    return () => {
-      controlsRef.current?.dispose();
-      document.removeEventListener("touchstart", requestGyroPermission);
-      window.removeEventListener("deviceorientation", handleOrientation);
-    };
-  }, [camera, isMobile]);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   useFrame((state, delta) => {
-    if (isMobile && controlsRef.current) {
-      // Update device orientation controls
-      controlsRef.current.update();
-    } else {
-      // Original pointer-based movement
+    if (!isMobile) {
+      // Original pointer-based movement for desktop
       easing.damp3(
         state.camera.position,
         [
@@ -177,7 +134,12 @@ function CameraRig() {
       );
       state.camera.lookAt(0, 0, 0);
     }
+    // DeviceOrientationControls handles camera movement for mobile
   });
 
-  return null;
+  return (
+    <>
+      {isMobile && <DeviceOrientationControls />}
+    </>
+  );
 }
