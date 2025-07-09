@@ -17,7 +17,7 @@ const headlines = [
     <span className="text-red-500">run itself.</span>
   </>,
   <>
-    AI Is reshaping operations.{" "}
+    AI is reshaping operations.{" "}
     <span className="text-red-500">You have 16 weeks to lead or lag.</span>
   </>,
 ];
