@@ -1,7 +1,8 @@
+import React, { Suspense, lazy } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
+const LazyApp = lazy(() => import("./App.jsx"));
 import "./styles.css";
 
 const headlines = [
@@ -63,7 +64,7 @@ export function Overlay() {
     >
       <div className="absolute inset-0 z-0 bg-black/50" />
 
-      <div className="relative z-10 max-w-2xl px-4 mx-auto text-center -translate-y-1/2 top-1/2">
+      <section className="relative z-10 max-w-2xl px-4 mx-auto text-center -translate-y-1/2 top-1/2">
         <RotatingHeadline texts={headlines} interval={5000} />
         <p className="mb-8 text-lg text-gray-200 sm:text-xl">
           Transform your operations in just 16 weeks—scalable, efficient,
@@ -79,7 +80,7 @@ export function Overlay() {
         >
           <span className="text-black ">Get your Free Strategic Roadmap →</span>
         </a>
-      </div>
+      </section>
       <div className="absolute w-48 bottom-5 left-5 md:w-72 md:bottom-10 md:left-10 sm:w-64 sm:bottom-10 sm:left-10 lg:w-96 lg:bottom-12 lg:left-12 xl:w-72 2xl:w-96">
         <img src="logo-dark.png" alt="Manasa Logo" />
       </div>
@@ -147,7 +148,9 @@ function BackgroundSwitcher() {
           </video>
         </div>
       ) : (
-        <App />
+        <Suspense fallback={null}>
+          <LazyApp />
+        </Suspense>
       )}
       <Overlay />
     </div>
