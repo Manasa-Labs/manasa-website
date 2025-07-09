@@ -7,18 +7,18 @@ import "./styles.css";
 const headlines = [
   <>
     Your competitors are already using AI.{" "}
-    <span className="text-orange-400">Are you?</span>.
+    <span className="text-orange-400">Are you?</span>
   </>,
   <>
     Slash Costs by 40% with <span className="text-orange-400">AI</span>.
   </>,
   <>
     We build AI systems that make your business{" "}
-    <span className="text-orange-400">run Itself.</span>
+    <span className="text-orange-400">run itself</span>.
   </>,
   <>
     AI Is reshaping operations.{" "}
-    <span className="text-orange-400">You have 16 weeks to lead or lag.</span>.
+    <span className="text-orange-400">You have 16 weeks to lead or lag</span>.
   </>,
 ];
 
@@ -63,10 +63,7 @@ export function Overlay() {
     >
       <div className="absolute inset-0 z-0 bg-black/50" />
 
-      <div className="relative z-10 max-w-2xl px-6 mx-auto text-center -translate-y-1/2 top-1/2">
-        {/* <h1 className="mb-4 text-3xl font-bold text-white sm:text-5xl font-display">
-          headline - Slash Costs by 40% with <span className="text-orange-400">AI</span>.{" "}
-        </h1> */}
+      <div className="relative z-10 max-w-2xl px-4 mx-auto text-center -translate-y-1/2 top-1/2">
         <RotatingHeadline texts={headlines} interval={5000} />
         <p className="mb-8 text-lg text-gray-200 sm:text-xl">
           Transform your operations in just 16 weeks—scalable, efficient,
@@ -80,7 +77,7 @@ export function Overlay() {
           style={{ pointerEvents: "auto" }}
           className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-orange-400 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
         >
-          <span className="text-black ">Get a Free Strategic Roadmap →</span>
+          <span className="text-black ">Get your Free Strategic Roadmap →</span>
         </a>
       </div>
       <div className="absolute w-48 bottom-5 left-5 md:w-72 md:bottom-10 md:left-10 sm:w-64 sm:bottom-10 sm:left-10 lg:w-96 lg:bottom-12 lg:left-12 xl:w-72 2xl:w-96">
@@ -98,9 +95,67 @@ export function Overlay() {
   );
 }
 
+function BackgroundSwitcher() {
+  const [isLowPower, setIsLowPower] = useState(false);
+
+  useEffect(() => {
+    // const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Hardware capabilities with safe defaults
+    const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+    const deviceMemory = navigator.deviceMemory || 4;
+
+    // Network detection
+    const isSlowConnection =
+      navigator.connection &&
+      (navigator.connection.saveData ||
+        /2g|slow-2g/i.test(navigator.connection.effectiveType));
+
+    // Set low-power mode if any condition matches
+    if (
+      // isMobile ||
+      hardwareConcurrency < 4 ||
+      deviceMemory < 4 ||
+      isSlowConnection
+    ) {
+      setIsLowPower(true);
+    }
+  }, []);
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100vh" }}>
+      {isLowPower ? (
+        // Fallback for low-power devices
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: -1,
+          }}
+        >
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          >
+            <source src="fallback.mp4" type="video/mp4" />
+          </video>
+        </div>
+      ) : (
+        <App />
+      )}
+      <Overlay />
+    </div>
+  );
+}
+
 createRoot(document.getElementById("root")).render(
   <>
-    <App />
-    <Overlay />
+    <BackgroundSwitcher />
   </>
 );
