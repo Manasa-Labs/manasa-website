@@ -7,18 +7,18 @@ const LazyApp = lazy(() => import("./App.jsx"));
 const headlines = [
   <>
     Your competitors are already using AI.{" "}
-    <span className="text-orange-400">Are you?</span>
+    <span className="text-red-500">Are you?</span>
   </>,
   <>
-    Slash Costs by 40% with <span className="text-orange-400">AI</span>.
+    Slash costs by 40% <span className="text-red-500">with AI.</span>
   </>,
   <>
     We build AI systems that make your business{" "}
-    <span className="text-orange-400">run itself</span>.
+    <span className="text-red-500">run itself.</span>
   </>,
   <>
     AI Is reshaping operations.{" "}
-    <span className="text-orange-400">You have 16 weeks to lead or lag</span>.
+    <span className="text-red-500">You have 16 weeks to lead or lag.</span>
   </>,
 ];
 
@@ -81,7 +81,7 @@ export function Overlay() {
             })
           }
           style={{ pointerEvents: "auto" }}
-          className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-orange-400 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+          className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-red-500 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
         >
           <span className="text-black ">Get your Free Strategic Roadmap →</span>
         </a>
@@ -98,7 +98,7 @@ export function Overlay() {
               event_label: "ask@manasa.ai",
             })
           }
-          className="mt-4 text-2xl font-bold text-white transition duration-300 border-b-2 border-white-400 md:text-3xl sm:text-3xl contact hover:border-orange-500 hover:text-orange-500"
+          className="mt-4 text-2xl font-bold text-white transition duration-300 border-b-2 border-white-400 md:text-3xl sm:text-3xl contact hover:border-red-500 hover:text-red-500"
         >
           ask@manasa.ai
         </a>
