@@ -771,15 +771,32 @@ function Screen({ frame, panel, children, ...props }) {
   );
 }
 
-export function ScreenText({ invert, x = 0, y = 1.2, ...props }) {
+function ScreenText({ invert, x = 0, y = 1.2, ...props }) {
   const textRef = useRef();
-  const rand = Math.random() * 10000;
+  const rand = useRef(Math.random() * 10000).current;
+  const xRef = useRef(x);
+  const isMounted = useRef(true);
+
+  // Update xRef when prop changes
+  useEffect(() => {
+    xRef.current = x;
+    return () => {
+      isMounted.current = false;
+    };
+  }, [x]);
 
   const textures = useTexture(["/Windows_NT_3.51_BSOD_ita.png"]);
+  const texturesRef = useRef(textures);
+
+  // Keep texturesRef updated
+  useEffect(() => {
+    texturesRef.current = textures;
+  }, [textures]);
+
   const [showBSOD, setShowBSOD] = useState(false);
   const [activeTexture, setActiveTexture] = useState(null);
-
   const [clicked, setClicked] = useState(false);
+
   const ripple = useSpring({
     scale: clicked ? 3 : 0,
     opacity: clicked ? 0.2 : 0,
@@ -787,40 +804,57 @@ export function ScreenText({ invert, x = 0, y = 1.2, ...props }) {
     onRest: () => setClicked(false),
   });
 
-  const triggerRipple = () => setClicked(true);
+  const triggerRipple = () => {
+    if (!showBSOD) {
+      setClicked(true);
+    }
+  };
 
   useEffect(() => {
-    let timeout;
+    const timeouts = [];
 
     const triggerBSOD = () => {
+      if (!isMounted.current) return;
+
       const nextBSOD = 10000 + Math.random() * 20000;
-      timeout = setTimeout(() => {
-        const index = Math.floor(Math.random() * textures.length);
-        setActiveTexture(textures[index]);
+      const timeoutId = setTimeout(() => {
+        if (!isMounted.current) return;
+
+        const index = Math.floor(Math.random() * texturesRef.current.length);
+        setActiveTexture(texturesRef.current[index]);
         setShowBSOD(true);
 
-        timeout = setTimeout(() => {
+        const hideTimeoutId = setTimeout(() => {
+          if (!isMounted.current) return;
           setShowBSOD(false);
-          triggerBSOD();
+          triggerBSOD(); // Schedule next BSOD
         }, 2000 + Math.random() * 3000);
+
+        timeouts.push(hideTimeoutId);
       }, nextBSOD);
+
+      timeouts.push(timeoutId);
     };
 
     triggerBSOD();
-    return () => clearTimeout(timeout);
-  }, [textures]);
+
+    // Cleanup all timeouts
+    return () => {
+      timeouts.forEach((id) => clearTimeout(id));
+    };
+  }, []);
 
   useFrame((state) => {
     if (!showBSOD && textRef.current) {
       textRef.current.position.x =
-        x + Math.sin(rand + state.clock.elapsedTime / 4) * 8;
+        xRef.current + Math.sin(rand + state.clock.elapsedTime / 4) * 8;
     }
   });
 
-  // Calculate proper aspect ratio for BSOD texture when active
+  // Calculate BSOD dimensions
   let bsodWidth = 0;
   let bsodHeight = 0;
-  if (showBSOD && activeTexture?.image?.width && activeTexture?.image?.height) {
+  if (showBSOD && activeTexture?.image) {
     const baseHeight = 5;
     const textureAspect =
       activeTexture.image.width / activeTexture.image.height;
@@ -832,7 +866,7 @@ export function ScreenText({ invert, x = 0, y = 1.2, ...props }) {
     <Screen {...props}>
       <PerspectiveCamera makeDefault manual aspect={1} position={[0, 0, 15]} />
       <group onClick={triggerRipple}>
-        {showBSOD && activeTexture?.image?.width > 0 ? (
+        {showBSOD && activeTexture?.image ? (
           <>
             <color attach="background" args={["black"]} />
             <mesh>
