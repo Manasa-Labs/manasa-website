@@ -163,9 +163,6 @@ function CameraRig() {
     if (isMobile && controlsRef.current) {
       // Update device orientation controls
       controlsRef.current.update();
-
-      // Maintain original camera position
-      state.camera.position.copy(initialPosition);
     } else {
       // Original pointer-based movement
       easing.damp3(
