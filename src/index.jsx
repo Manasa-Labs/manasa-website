@@ -74,6 +74,12 @@ export function Overlay() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Get a Free Strategic Roadmap"
+          onClick={() =>
+            gtag("event", "cta_click", {
+              event_category: "engagement",
+              event_label: "free_strategic_roadmap",
+            })
+          }
           style={{ pointerEvents: "auto" }}
           className="inline-block px-6 py-3 font-medium text-black transition bg-white rounded-full shadow-lg hover:bg-orange-400 hover:text-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
         >
@@ -85,7 +91,13 @@ export function Overlay() {
       </div>
       <div className="absolute hidden bottom-5 right-5 md:bottom-10 md:right-10 sm:bottom-10 sm:right-10 lg:bottom-12 lg:right-12 xl:bottom-10 xl:right-10 2xl:bottom-12 2xl:right-12 md:block">
         <a
-          href="mailto:ask@manasa.ai"
+          href="mailto:contact@manasa.ai"
+          onClick={() =>
+            gtag("event", "email_click", {
+              event_category: "contact",
+              event_label: "ask@manasa.ai",
+            })
+          }
           className="mt-4 text-2xl font-bold text-white transition duration-300 border-b-2 border-white-400 md:text-3xl sm:text-3xl contact hover:border-orange-500 hover:text-orange-500"
         >
           ask@manasa.ai
@@ -99,8 +111,6 @@ function BackgroundSwitcher() {
   const [isLowPower, setIsLowPower] = useState(false);
 
   useEffect(() => {
-    // const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
     // Hardware capabilities with safe defaults
     const hardwareConcurrency = navigator.hardwareConcurrency || 4;
     const deviceMemory = navigator.deviceMemory || 4;
@@ -112,13 +122,15 @@ function BackgroundSwitcher() {
         /2g|slow-2g/i.test(navigator.connection.effectiveType));
 
     // Set low-power mode if any condition matches
-    if (
-      // isMobile ||
-      hardwareConcurrency < 4 ||
-      deviceMemory < 4 ||
-      isSlowConnection
-    ) {
+    if (hardwareConcurrency < 4 || deviceMemory < 4 || isSlowConnection) {
       setIsLowPower(true);
+      // Track low power mode activation
+      if (typeof gtag === "function") {
+        gtag("event", "low_power_mode_activated", {
+          event_category: "performance",
+          event_label: "device_detected",
+        });
+      }
     }
   }, []);
 

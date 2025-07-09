@@ -11,6 +11,20 @@
       name="description"
       content="Manasa offers AI solutions to transform business operations, slash costs, and drive efficiency. Get your free strategic roadmap today."
     />
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-SVYEM07NQG"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-SVYEM07NQG");
+    </script>
     <link href="/src/styles.css" rel="stylesheet" />
 
     <link rel="manifest" href="/site.webmanifest" />
@@ -30,6 +44,19 @@
           "@type": "ContactPoint",
           "email": "ask@manasa.ai",
           "contactType": "customer service"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Manasa",
+        "url": "https://manasa.ai",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://manasa.ai/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
         }
       }
     </script>
