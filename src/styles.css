@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 * {
   box-sizing: border-box;
@@ -16,7 +16,7 @@ body,
 body {
   background: black;
   color: #f0f0f0;
-  font-family: 'Inter';
+  font-family: "Inter";
 }
 
 a {
@@ -49,7 +49,7 @@ canvas {
 }
 
 input {
-  font-family: 'Inter';
+  font-family: "Inter";
   width: 100px;
   border: none;
   background-image: none;
@@ -68,14 +68,15 @@ input:focus {
 }
 
 @font-face {
-  font-family: 'Funnel Display';
-  src: url('/funnel-display-v2-latin-regular.woff') format('woff');
+  font-family: "Funnel Display";
+  src: url("/funnel-display-v2-latin-regular.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-.contact {
-  font-family: 'Funnel Display', 'Inter', sans-serif !important;
+* {
+  font-family: "Funnel Display", "Inter", sans-serif !important;
   letter-spacing: -0.01em;
 }
+

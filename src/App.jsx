@@ -10,6 +10,7 @@ import {
   ChromaticAberration,
   DepthOfField,
   EffectComposer,
+  Noise,
 } from "@react-three/postprocessing";
 import { easing } from "maath";
 import { BlendFunction } from "postprocessing";
@@ -90,7 +91,7 @@ export default function App() {
           bokehScale={15}
           height={700}
         />
-        {/* <Noise opacity={0.01} /> */}
+        <Noise opacity={0.01} />
         {/* <Vignette eskil={false} offset={0.1} darkness={1.1} /> */}
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL} // blend mode
