@@ -130,22 +130,23 @@ function CameraRig() {
       setOrientation({ gamma: event.gamma, beta: event.beta });
     };
 
+    const requestPermission = () => {
+      DeviceOrientationEvent.requestPermission()
+        .then((permissionState) => {
+          if (permissionState === "granted") {
+            window.addEventListener(
+              "deviceorientation",
+              handleDeviceOrientation
+            );
+          } else {
+            console.warn("Device orientation permission denied.");
+          }
+        })
+        .catch(console.error);
+    };
+
     // Request permission for iOS 13+
     if (typeof DeviceOrientationEvent.requestPermission === "function") {
-      const requestPermission = () => {
-        DeviceOrientationEvent.requestPermission()
-          .then((permissionState) => {
-            if (permissionState === "granted") {
-              window.addEventListener(
-                "deviceorientation",
-                handleDeviceOrientation
-              );
-            } else {
-              console.warn("Device orientation permission denied.");
-            }
-          })
-          .catch(console.error);
-      };
       // Trigger permission request on first user interaction
       document.body.addEventListener("click", requestPermission, {
         once: true,
@@ -162,7 +163,6 @@ function CameraRig() {
       window.removeEventListener("deviceorientation", handleDeviceOrientation);
       // Clean up permission listeners if they were added
       if (typeof DeviceOrientationEvent.requestPermission === "function") {
-        const requestPermission = () => {};
         document.body.removeEventListener("click", requestPermission);
         document.body.removeEventListener("touchstart", requestPermission);
       }
@@ -194,9 +194,6 @@ function CameraRig() {
         0.5,
         delta
       );
-
-      // Reset camera rotation to avoid tilting
-      state.camera.rotation.set(0, 0, 0);
     }
     // Ensure camera always looks at the scene origin
     state.camera.lookAt(0, 0, 0);
